@@ -1,6 +1,6 @@
 import json
 import folium
-from yandex_geocoder import Client
+import yandex_geocoder
 from geopy import distance
 from operator import itemgetter
 import os
@@ -56,8 +56,8 @@ if __name__ == '__main__':
     bar_input = False
     while bar_input == False:
         try:
-            bar_input = Client.coordinates(input('Укажите Ваше Местоположение\n'))
-        except Exception:
+            bar_input = yandex_geocoder.Client.coordinates(input('Укажите Ваше Местоположение\n'))
+        except yandex_geocoder.exceptions.YandexGeocoderAddressNotFound:
             print('Не существующий адрес')
             bar_input = False
     bar_input = [bar_input[1], bar_input[0]]
