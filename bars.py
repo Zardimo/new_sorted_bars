@@ -20,26 +20,26 @@ def get_all_bars(filepath):
         return None
 
 
-def sorted_5_close_bars(bars, bar_input):
+def sorting_5_ing_close_bars(bars, input_location):
     sorted_bars = []
     for bar in bars:
         longitude = bar['geoData']['coordinates'][0]
         latitude = bar['geoData']['coordinates'][1]
         bar_coordinate = (latitude, longitude)
-        typing_bar = {
+        typical_bar = {
         'title': bar['Name'],
         'longitude' : longitude,
         'latitude' : latitude,
-        'distance' : distance.distance(bar_coordinate, bar_input)
+        'distance' : distance.distance(bar_coordinate, input_location)
         }
-        sorted_bars.append(typing_bar)
+        sorted_bars.append(typical_bar)
     sorted_bars = sorted(sorted_bars, key=itemgetter('distance'))[:5]
     return sorted_bars
 
 
-def marker_on_map(bar_input, sorted_bars):
+def map_mark(input_location, sorted_bars):
     mark_on_map = folium.Map(
-        location=bar_input,
+        location=input_location,
         zoom_start=17,
         tiles='Stamen Terrain')
     for bar in sorted_bars:
@@ -50,16 +50,17 @@ def marker_on_map(bar_input, sorted_bars):
 if __name__ == '__main__':
     if not len(sys.argv) > 1:
         exit('Укажите путь к файлу со списком баров, формата json')
-    path_to_json = sys.argv[1]
-    if get_all_bars(path_to_json) is None:
+    path_to_json_file = sys.argv[1]
+    all_bars = get_all_bars(path_to_json_file)
+    if not all_bars:
         exit('Неверно указан путь к файлу с базой')
-    bar_input = False
-    while bar_input == False:
+    input_location = False
+    while not input_location:
         try:
-            bar_input = yandex_geocoder.Client.coordinates(input('Укажите Ваше Местоположение\n'))
+            input_location = yandex_geocoder.Client.coordinates(input('Укажите Ваше Местоположение\n'))
         except yandex_geocoder.exceptions.YandexGeocoderAddressNotFound:
             print('Не существующий адрес')
-            bar_input = False
-    bar_input = [bar_input[1], bar_input[0]]
-    sorted_bars = sorted_5_close_bars(get_all_bars(path_to_json), bar_input)
-    marker_on_map(bar_input, sorted_bars)
+            input_location = False
+    input_location = [input_location[1], input_location[0]]
+    sorted_bars = sorting_5_ing_close_bars(all_bars, input_location)
+    map_mark(input_location, sorted_bars)
