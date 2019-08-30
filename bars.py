@@ -7,6 +7,8 @@ import os
 import sys
 from sys import argv
 import time
+from flask import Flask
+import webbrowser
 
 
 def get_all_bars(filepath):
@@ -20,8 +22,8 @@ def get_all_bars(filepath):
         return None
 
 
-def sorting_5_ing_close_bars(bars, input_location):
-    sorted_bars = []
+def get_bars_with_distance(bars, input_location):
+    nearest_bars = []
     for bar in bars:
         longitude = bar['geoData']['coordinates'][0]
         latitude = bar['geoData']['coordinates'][1]
@@ -32,19 +34,19 @@ def sorting_5_ing_close_bars(bars, input_location):
         'latitude' : latitude,
         'distance' : distance.distance(bar_coordinate, input_location)
         }
-        sorted_bars.append(typical_bar)
-    sorted_bars = sorted(sorted_bars, key=itemgetter('distance'))[:5]
-    return sorted_bars
+        nearest_bars.append(typical_bar)
+    nearest_bars = sorted(nearest_bars, key=itemgetter('distance'))[:5]
+    return nearest_bars
 
 
-def map_mark(input_location, sorted_bars):
+def map_mark(input_location, sorted_bars, filename):
     mark_on_map = folium.Map(
         location=input_location,
         zoom_start=17,
         tiles='Stamen Terrain')
     for bar in sorted_bars:
         folium.Marker([bar['latitude'], bar['longitude']], popup='<i>{}</i>'.format(bar['title']), tooltip=bar['title']).add_to(mark_on_map)
-    mark_on_map.save('bars_on_map.html')
+    mark_on_map.save(filename)
 
 
 if __name__ == '__main__':
@@ -62,5 +64,8 @@ if __name__ == '__main__':
             print('Не существующий адрес')
             input_location = False
     input_location = [input_location[1], input_location[0]]
-    sorted_bars = sorting_5_ing_close_bars(all_bars, input_location)
-    map_mark(input_location, sorted_bars)
+    sorted_bars = get_bars_with_distance(all_bars, input_location)
+    html_name = 'bars_on_map.html'
+    map_mark(input_location, sorted_bars, html_name)
+    path_to_map_file = os.path.join(os.getcwd(), html_name)
+    webbrowser.open(path_to_map_file)
